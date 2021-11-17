@@ -9,12 +9,29 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt, QIODevice
+from PyQt5.QtSerialPort import QSerialPort
+import time 
+import serial
+import keyboard
 
+timer  = QtCore.QTimer()  
 
 class Ui_MainWindow(object):
+    def __init__(self):
+        self.second = 0
+        self.minute = 0
+        self.hour = 0
+        
+        self.serPort = QSerialPort()
+        self.serPort.readyRead.connect(self.dataReady)
+        self.serPort.setPortName('/dev/ttyACM0')
+        self.serPort.setBaudRate(115200)
+        self.serPort.open(QIODevice.ReadWrite)
+        
     def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(474, 473)
+        MainWindow.setObjectName("Stoper")
+        MainWindow.resize(440, 450)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.start_button = QtWidgets.QPushButton(self.centralwidget)
@@ -25,7 +42,7 @@ class Ui_MainWindow(object):
         self.start_button.setFont(font)
         self.start_button.setObjectName("start_button")
         self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(70, 380, 311, 31))
+        self.label.setGeometry(QtCore.QRect(90, 380, 330, 31))
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setPointSize(8)
@@ -79,10 +96,11 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
+        
+        
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Stoper"))
         self.start_button.setText(_translate("MainWindow", "Start"))
         self.label.setText(_translate("MainWindow", "Stoper project by Dominik Chat & Krzysztof Bolek"))
         self.hours.setText(_translate("MainWindow", "00"))
@@ -90,13 +108,64 @@ class Ui_MainWindow(object):
         self.seconds.setText(_translate("MainWindow", "00"))
         self.colon.setText(_translate("MainWindow", ":"))
         self.colon_2.setText(_translate("MainWindow", ":"))
+        
+    def update_watch(self):
+        self.second+=1
+        if(self.second== 60): 
+            self.second = 0    
+            self.minute+=1  
+        if(self.minute == 60): 
+            self.minute = 0    
+            self.hour+=1
+        
+        if(self.second < 10):
+            self.seconds.setText('0' + str(self.second))
+        else:
+            self.seconds.setText(str(self.second))
+            
+        if(self.minute < 10):
+            self.minutes.setText('0' + str(self.minute))
+        else:
+            self.minutes.setText(str(self.minute))
+        
+        if(self.hour < 10):
+            self.hours.setText('0' + str(self.hour))
+        else:
+            self.hours.setText(str(self.hour))
+            
+    def dataReady(self):
+        if(bytes(self.serPort.readAll() == 'E')):
+           timer.stop()
+    
+    def timer_start(self):
+        self.second = -1
+        self.minute = 0
+        self.hour = 0
+        timer.start(1000)
+        
+    
 
 
 if __name__ == "__main__":
     import sys
+   
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
-    sys.exit(app.exec_())
+    
+    
+    timer.timeout.connect(ui.update_watch)
+    ui.start_button.clicked.connect(ui.timer_start)
+
+
+    sys.exit(app.exec_())  
+    
+         
+        
+
+
+        
+    
+   
