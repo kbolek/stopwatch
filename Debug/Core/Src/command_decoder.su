@@ -1,5 +1,0 @@
-command_decoder.c:23:9:ui8FindTokensInString	24	static
-command_decoder.c:55:8:eStringToKeyword	24	static
-command_decoder.c:68:8:DecodeTokens	24	static
-command_decoder.c:90:6:ReplaceCharactersInString	24	static
-command_decoder.c:97:6:DecodeMsg	16	static
